@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cost of Living Estimator | GO Destinations × Conexus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Design tokens — exact match to city video library ── */
+:root {
+  --orange:      #ED8F2B;
+  --orange-dark: #d4791e;
+  --blue:        #3A5D83;
+  --blue-dark:   #2a4460;
+  --blue-deeper: #1e3550;
+  --navy:        #0F1E32;
+  --bg:          #F5F4F0;
+  --white:       #ffffff;
+  --muted:       #6B7B8D;
+  --border:      rgba(58,93,131,.12);
+  --green:       #1e8c5a;
+  --green-bg:    rgba(30,140,90,.1);
+  --red:         #c0392b;
+  --red-bg:      rgba(192,57,43,.1);
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: var(--bg);
+  color: var(--blue);
+  min-height: 100vh;
+  padding: 80px 20px 80px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.wrapper { max-width: 1100px; margin: 0 auto; }
+
+/* ══════════════════════════════
+   HEADER — matches city library
+══════════════════════════════ */
+.go-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.go-eyebrow {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.go-eyebrow::before, .go-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--orange);
+}
+
+.go-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--blue);
+  margin-bottom: 16px;
+  letter-spacing: -.01em;
+}
+.go-title em {
+  font-style: italic;
+  color: var(--orange);
+  font-weight: 800;
+}
+
+.go-sub {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════
+   LAYOUT
+══════════════════════════════ */
+.go-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ══════════════════════════════
+   LEFT PANEL — dark blue like card-top
+══════════════════════════════ */
+.go-left {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  padding: 32px 28px;
+  position: sticky;
+  top: 20px;
+  border-top: 3px solid var(--orange);
+}
+
+.go-left-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: block;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(237,143,43,.25);
+}
+
+.go-field { margin-bottom: 22px; }
+
+.go-field-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tip-icon {
+  width: 14px; height: 14px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-style: italic;
+  color: rgba(255,255,255,.4);
+  cursor: help;
+}
+
+.go-select-wrap { position: relative; }
+.go-select-wrap select {
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 0;
+  color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 12px 36px 12px 14px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  letter-spacing: .01em;
+}
+.go-select-wrap select option { background: var(--blue-dark); color: #fff; }
+.go-select-wrap select:focus  { border-color: var(--orange); background: rgba(255,255,255,.12); }
+.go-select-wrap::after {
+  content: '▾';
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,.35);
+  pointer-events: none;
+  font-size: 10px;
+}
+
+.go-income-wrap { position: relative; }
+.go-income-wrap .prefix {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,.35);
+  font-size: 13px;
+  pointer-events: none;
+}
+.go-income-input {
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 0;
+  color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  padding: 12px 14px 12px 26px;
+  outline: none;
+  transition: border-color .2s, background .2s;
+}
+.go-income-input:focus { border-color: var(--orange); background: rgba(255,255,255,.12); }
+
+.go-divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin: 22px 0;
+}
+
+.go-tip-box {
+  background: rgba(237,143,43,.1);
+  border-left: 3px solid var(--orange);
+  padding: 14px 16px;
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  line-height: 1.8;
+}
+.go-tip-box strong { color: var(--orange); font-weight: 700; }
+
+.go-brand-strip {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.22);
+}
+.go-brand-dot {
+  width: 28px; height: 28px;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════
+   RIGHT PANEL
+══════════════════════════════ */
+.go-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Summary card — white like city cards ── */
+.go-summary {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--orange);
+  padding: 34px 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.go-empty {
+  text-align: center;
+  padding: 52px 20px;
+  color: var(--muted);
+}
+.go-empty-icon { font-size: 2.4rem; display: block; margin-bottom: 14px; }
+.go-empty-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* Summary label — matches .go-city-link style */
+.go-summary-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.go-summary-line {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+.go-summary-line strong { color: var(--blue); font-weight: 700; }
+
+/* Big income number — like .go-sec-title */
+.go-income-result {
+  font-family: 'Open Sans', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 800;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: 10px;
+  letter-spacing: -.02em;
+}
+
+.go-pct-line {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.go-pct-higher { color: var(--red);   font-weight: 700; }
+.go-pct-lower  { color: var(--green); font-weight: 700; }
+.go-pct-same   { color: var(--muted); font-weight: 700; }
+
+/* City compare bar — like card-top gradient */
+.go-city-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.go-city-pill {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  padding: 16px 18px;
+}
+.go-city-pill.new-city {
+  background: linear-gradient(135deg, var(--blue-dark), var(--navy));
+  border-top: 2px solid var(--orange);
+}
+
+.go-pill-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  margin-bottom: 5px;
+}
+.go-pill-name {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.go-pill-name.orange { color: var(--orange); }
+.go-pill-income {
+  font-size: 11px;
+  color: rgba(255,255,255,.45);
+}
+
+.go-vs {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── Categories card — dark like modal info panel ── */
+.go-cats {
+  background: var(--white);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Header bar — matches .go-tabs + modal header style */
+.go-cat-header {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  padding: 14px 26px;
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 130px 20px;
+  gap: 8px;
+  align-items: center;
+}
+.go-cat-header span {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  text-align: right;
+}
+.go-cat-header span:first-child {
+  text-align: left;
+  color: rgba(255,255,255,.75);
+}
+
+.go-cat-row { border-bottom: 1px solid var(--border); }
+.go-cat-row:last-child { border-bottom: none; }
+
+/* Row trigger — matches .go-info-toggle feel */
+.go-cat-trigger {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 130px 20px;
+  gap: 8px;
+  align-items: center;
+  padding: 18px 26px;
+  cursor: pointer;
+  transition: background .15s;
+  user-select: none;
+  background: none;
+  border: none;
+  width: 100%;
+}
+.go-cat-trigger:hover { background: rgba(58,93,131,.04); }
+
+.go-cat-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  text-align: left;
+}
+
+.go-cat-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: rgba(58,93,131,.07);
+  border: 1px solid rgba(58,93,131,.1);
+}
+
+.go-cat-val {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  font-weight: 400;
+}
+
+/* Diff badge — matches .go-modal-state-badge style */
+.go-cat-diff {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 5px 10px;
+  display: inline-block;
+  width: 100%;
+}
+.go-cat-diff.higher { color: var(--red);   background: var(--red-bg);   border: 1px solid rgba(192,57,43,.2); }
+.go-cat-diff.lower  { color: var(--green); background: var(--green-bg); border: 1px solid rgba(30,140,90,.2); }
+.go-cat-diff.same   { color: var(--muted); background: rgba(58,93,131,.06); border: 1px solid rgba(58,93,131,.1); }
+
+/* Chevron — matches .go-toggle-arrow */
+.go-chevron {
+  color: var(--orange);
+  font-size: 10px;
+  font-weight: 700;
+  transition: transform .35s cubic-bezier(.16,1,.3,1);
+  text-align: center;
+}
+.go-chevron.open { transform: rotate(180deg); }
+
+/* Detail body — matches .go-info-panel dark style */
+.go-cat-body {
+  display: none;
+  padding: 4px 26px 22px 74px;
+  background: var(--blue-deeper);
+}
+.go-cat-body.open { display: block; }
+
+.go-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Detail item — matches .go-thing-item */
+.go-detail-item {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  padding: 14px 16px;
+  transition: background .2s, border-color .2s;
+}
+.go-detail-item:hover {
+  background: rgba(237,143,43,.07);
+  border-color: rgba(237,143,43,.28);
+}
+
+.go-di-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 10px;
+}
+
+.go-di-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.go-di-city {
+  font-size: 10px;
+  color: rgba(255,255,255,.3);
+}
+
+.go-di-val-a {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+.go-di-val-b {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.go-di-desc {
+  font-size: 10px;
+  color: rgba(255,255,255,.25);
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+/* ── Footer note ── */
+.go-footer-note {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.go-footer-note a {
+  color: var(--orange);
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.go-footer-note a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 760px) {
+  .go-layout { grid-template-columns: 1fr; }
+  .go-left    { position: static; }
+  .go-cat-header  { display: none; }
+  .go-cat-trigger { grid-template-columns: 1fr auto auto; }
+  .go-cat-val     { display: none; }
+  .go-detail-grid { grid-template-columns: 1fr 1fr; }
+  .go-city-bar    { grid-template-columns: 1fr; }
+  .go-vs          { display: none; }
+}
+@media (max-width: 480px) {
+  .go-detail-grid { grid-template-columns: 1fr; }
+  .go-summary     { padding: 24px 20px; }
+  .go-cat-body    { padding: 4px 16px 20px 16px; }
+}
+
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ══ HEADER ══ -->
+  <div class="go-header">
+    <div class="go-eyebrow">Relocation Tool</div>
+    <h1 class="go-title">Cost of Living <em>City Estimator</em></h1>
+    <p class="go-sub">Compare the cost of living between cities and discover how much income you'd need to maintain your current standard of living somewhere new.</p>
+  </div>
+
+  <div class="go-layout">
+
+    <!-- ══ LEFT PANEL ══ -->
+    <div class="go-left">
+      <span class="go-left-title">Compare Cities</span>
+
+      <div class="go-field">
+        <div class="go-field-label">
+          Current City
+          <span class="tip-icon" title="The city you currently live in">i</span>
+        </div>
+        <div class="go-select-wrap">
+          <select id="cityA" onchange="recalc()"><option value="">Select a city…</option></select>
+        </div>
+      </div>
+
+      <div class="go-field">
+        <div class="go-field-label">New City</div>
+        <div class="go-select-wrap">
+          <select id="cityB" onchange="recalc()"><option value="">Select a city…</option></select>
+        </div>
+      </div>
+
+      <div class="go-field">
+        <div class="go-field-label">
+          Pre-Tax Household Income
+          <span class="tip-icon" title="Annual income before taxes">i</span>
+        </div>
+        <div class="go-income-wrap">
+          <span class="prefix">$</span>
+          <input class="go-income-input" id="income" type="number" value="50000" min="0" oninput="recalc()">
+        </div>
+      </div>
+
+      <hr class="go-divider">
+
+      <div class="go-tip-box">
+        <strong>How it works:</strong> We apply cost-of-living index data across six spending categories — weighted by typical household budget shares — to estimate the income you'd need to maintain your lifestyle in a new city.
+      </div>
+
+      <div class="go-brand-strip">
+        <div class="go-brand-dot">GO</div>
+        GO Destinations Tool
+      </div>
+    </div>
+
+    <!-- ══ RIGHT PANEL ══ -->
+    <div class="go-right">
+
+      <!-- Summary -->
+      <div class="go-summary">
+        <div id="emptyState" class="go-empty">
+          <span class="go-empty-icon">🏙️</span>
+          <p class="go-empty-text">Select two cities and enter your household income to see your cost of living comparison.</p>
+        </div>
+        <div id="summaryContent" style="display:none">
+          <span class="go-summary-label">Standard of Living Comparison</span>
+          <p class="go-summary-line" id="summaryLine">In <strong>—</strong>, you'll need a household income of:</p>
+          <div class="go-income-result" id="incomeNeeded">—</div>
+          <p class="go-pct-line">The cost of living is <span id="pctSpan">—</span>.</p>
+          <div class="go-city-bar">
+            <div class="go-city-pill">
+              <div class="go-pill-label">Current City</div>
+              <div class="go-pill-name" id="cpNameA">—</div>
+              <div class="go-pill-income" id="cpIncA">—</div>
+            </div>
+            <div class="go-vs">vs</div>
+            <div class="go-city-pill new-city">
+              <div class="go-pill-label">New City</div>
+              <div class="go-pill-name orange" id="cpNameB">—</div>
+              <div class="go-pill-income" id="cpIncB">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="go-cats">
+        <div class="go-cat-header">
+          <span>Category</span>
+          <span id="hdrA">Current</span>
+          <span id="hdrB">New City</span>
+          <span>Difference</span>
+          <span></span>
+        </div>
+        <div id="categoryRows"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="go-footer-note">
+    Estimates are based on cost-of-living index data and are for general guidance only. For personalized relocation support, <a href="https://godestinationservices.com/contact-us/" target="_blank">contact the GO Destinations team →</a>
+  </div>
+
+</div>
+
+<script>
+const CITIES = {
+  "New York, NY":       {housing:216,food:110,transport:108,utilities:115,healthcare:107,entertainment:119},
+  "San Francisco, CA":  {housing:281,food:115,transport:116,utilities:120,healthcare:112,entertainment:122},
+  "Los Angeles, CA":    {housing:198,food:108,transport:112,utilities:118,healthcare:110,entertainment:115},
+  "Seattle, WA":        {housing:182,food:107,transport:110,utilities:102,healthcare:111,entertainment:112},
+  "Boston, MA":         {housing:195,food:110,transport:107,utilities:116,healthcare:108,entertainment:115},
+  "Chicago, IL":        {housing:121,food:103,transport:104,utilities:108,healthcare:104,entertainment:106},
+  "Austin, TX":         {housing:142,food:100,transport:102,utilities:100,healthcare:98, entertainment:100},
+  "Dallas, TX":         {housing:118,food:98, transport:102,utilities:100,healthcare:97, entertainment:99},
+  "Houston, TX":        {housing:109,food:97, transport:101,utilities:103,healthcare:96, entertainment:97},
+  "Phoenix, AZ":        {housing:126,food:99, transport:100,utilities:105,healthcare:98, entertainment:99},
+  "Denver, CO":         {housing:158,food:104,transport:104,utilities:98, healthcare:102,entertainment:105},
+  "Miami, FL":          {housing:161,food:106,transport:106,utilities:108,healthcare:103,entertainment:108},
+  "Nashville, TN":      {housing:131,food:100,transport:101,utilities:99, healthcare:99, entertainment:101},
+  "Atlanta, GA":        {housing:119,food:100,transport:101,utilities:102,healthcare:99, entertainment:100},
+  "Portland, OR":       {housing:158,food:106,transport:106,utilities:100,healthcare:108,entertainment:108},
+  "Minneapolis, MN":    {housing:124,food:101,transport:102,utilities:104,healthcare:103,entertainment:102},
+  "San Diego, CA":      {housing:192,food:109,transport:111,utilities:117,healthcare:109,entertainment:112},
+  "Philadelphia, PA":   {housing:128,food:104,transport:103,utilities:110,healthcare:105,entertainment:105},
+  "Washington, DC":     {housing:188,food:108,transport:107,utilities:112,healthcare:107,entertainment:113},
+  "Las Vegas, NV":      {housing:128,food:101,transport:103,utilities:111,healthcare:100,entertainment:106},
+  "Charlotte, NC":      {housing:116,food:99, transport:100,utilities:99, healthcare:98, entertainment:99},
+  "Columbus, OH":       {housing:97, food:98, transport:99, utilities:102,healthcare:97, entertainment:97},
+  "Detroit, MI":        {housing:74, food:96, transport:98, utilities:108,healthcare:97, entertainment:93},
+  "Indianapolis, IN":   {housing:90, food:97, transport:98, utilities:102,healthcare:96, entertainment:96},
+  "Memphis, TN":        {housing:79, food:96, transport:97, utilities:101,healthcare:95, entertainment:94},
+  "Honolulu, HI":       {housing:290,food:130,transport:122,utilities:198,healthcare:118,entertainment:125},
+  "Anchorage, AK":      {housing:148,food:122,transport:118,utilities:140,healthcare:130,entertainment:112},
+  "Salt Lake City, UT": {housing:144,food:101,transport:101,utilities:97, healthcare:100,entertainment:101},
+  "Raleigh, NC":        {housing:128,food:100,transport:101,utilities:100,healthcare:99, entertainment:101},
+  "Tampa, FL":          {housing:134,food:103,transport:103,utilities:106,healthcare:100,entertainment:104},
+  "Orlando, FL":        {housing:130,food:102,transport:102,utilities:107,healthcare:100,entertainment:105},
+  "San Antonio, TX":    {housing:100,food:97, transport:100,utilities:101,healthcare:96, entertainment:97},
+  "Kansas City, MO":    {housing:94, food:97, transport:99, utilities:101,healthcare:97, entertainment:97},
+  "St. Louis, MO":      {housing:88, food:96, transport:98, utilities:103,healthcare:97, entertainment:95},
+  "Pittsburgh, PA":     {housing:93, food:98, transport:99, utilities:105,healthcare:100,entertainment:98},
+  "Richmond, VA":       {housing:108,food:99, transport:100,utilities:101,healthcare:99, entertainment:99},
+  "Sacramento, CA":     {housing:168,food:107,transport:108,utilities:114,healthcare:107,entertainment:108},
+};
+
+const WEIGHTS = {housing:.33,food:.15,transport:.16,utilities:.07,healthcare:.08,entertainment:.05};
+
+const CAT_META = {
+  housing:       {label:'Housing Costs',   icon:'🏠',
+    details:[{label:'Median Rent (1BR)', desc:'per month',   base:1400},
+             {label:'Median Home Price', desc:'estimate',    base:320000},
+             {label:'Utility Bundle',   desc:'per month',   base:150}]},
+  food:          {label:'Food & Groceries',icon:'🛒',
+    details:[{label:'Grocery Index',    desc:'vs US avg',   base:100,pct:true},
+             {label:'Restaurant Meal',  desc:'mid-range',   base:45},
+             {label:'Coffee',           desc:'per cup',     base:5.5}]},
+  transport:     {label:'Transportation', icon:'🚌',
+    details:[{label:'Gas (per gallon)', desc:'regular',     base:3.40},
+             {label:'Monthly Transit',  desc:'pass',        base:100},
+             {label:'Car Insurance',    desc:'annual est.', base:1400}]},
+  utilities:     {label:'Utilities',      icon:'💡',
+    details:[{label:'Electricity',      desc:'per month',   base:110},
+             {label:'Internet',         desc:'per month',   base:65},
+             {label:'Water/Sewer',      desc:'per month',   base:55}]},
+  healthcare:    {label:'Healthcare',     icon:'❤️',
+    details:[{label:'Doctor Visit',     desc:'no insurance',base:250},
+             {label:'Health Index',     desc:'vs US avg',   base:100,pct:true},
+             {label:'Dentist Visit',    desc:'estimate',    base:180}]},
+  entertainment: {label:'Entertainment',  icon:'🎬',
+    details:[{label:'Movie Ticket',     desc:'per person',  base:14},
+             {label:'Gym Membership',   desc:'per month',   base:45},
+             {label:'Entertain. Index', desc:'vs US avg',   base:100,pct:true}]},
+};
+
+const fmt  = n => '$' + Math.round(n).toLocaleString();
+const fmtD = (n,d) => '$' + n.toFixed(d);
+
+function scaledVal(base, idx, isPct) {
+  const v = base * (idx / 100);
+  if (isPct)        return Math.round(v);
+  if (base >= 1000) return '$' + Math.round(v).toLocaleString();
+  if (base < 10)    return fmtD(v, 2);
+  return '$' + Math.round(v);
+}
+
+function populateSelects() {
+  const cities = Object.keys(CITIES).sort();
+  ['cityA','cityB'].forEach((id,i) => {
+    const sel = document.getElementById(id);
+    cities.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      if (i===0 && c==='Dallas, TX')        o.selected = true;
+      if (i===1 && c==='San Francisco, CA') o.selected = true;
+      sel.appendChild(o);
+    });
+  });
+}
+
+function recalc() {
+  const keyA   = document.getElementById('cityA').value;
+  const keyB   = document.getElementById('cityB').value;
+  const income = parseFloat(document.getElementById('income').value) || 0;
+
+  if (!keyA || !keyB || keyA === keyB) {
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('summaryContent').style.display = 'none';
+    document.getElementById('categoryRows').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('summaryContent').style.display = '';
+
+  const dA = CITIES[keyA], dB = CITIES[keyB];
+  let totA = 0, totB = 0;
+  for (let c in WEIGHTS) { totA += dA[c]*WEIGHTS[c]; totB += dB[c]*WEIGHTS[c]; }
+
+  const ratio     = totB / totA;
+  const incNeeded = income * ratio;
+  const diffPct   = Math.round(((totB-totA)/totA)*100);
+
+  document.getElementById('summaryLine').innerHTML =
+    `In <strong>${keyB}</strong>, you'll need a household income of:`;
+  document.getElementById('incomeNeeded').textContent = fmt(incNeeded);
+
+  const sp = document.getElementById('pctSpan');
+  if (diffPct > 0)      sp.innerHTML = `<span class="go-pct-higher">${diffPct}% higher</span>`;
+  else if (diffPct < 0) sp.innerHTML = `<span class="go-pct-lower">${Math.abs(diffPct)}% lower</span>`;
+  else                  sp.innerHTML = `<span class="go-pct-same">about the same</span>`;
+
+  document.getElementById('cpNameA').textContent = keyA;
+  document.getElementById('cpIncA').textContent  = fmt(income) + '/yr';
+  document.getElementById('cpNameB').textContent = keyB;
+  document.getElementById('cpIncB').textContent  = fmt(incNeeded) + '/yr';
+  document.getElementById('hdrA').textContent    = keyA.split(',')[0];
+  document.getElementById('hdrB').textContent    = keyB.split(',')[0];
+
+  const container = document.getElementById('categoryRows');
+  container.innerHTML = '';
+
+  for (let cat in WEIGHTS) {
+    const meta   = CAT_META[cat];
+    const idxA   = dA[cat], idxB = dB[cat];
+    const d      = Math.round(((idxB-idxA)/idxA)*100);
+    const shareA = income * WEIGHTS[cat];
+    const shareB = incNeeded * WEIGHTS[cat];
+
+    const cls  = d > 0 ? 'higher' : (d < 0 ? 'lower' : 'same');
+    const txt  = d > 0 ? `${d}% higher` : (d < 0 ? `${Math.abs(d)}% lower` : 'Same');
+
+    const detailsHTML = meta.details.map(det => {
+      const vA = scaledVal(det.base, idxA, det.pct);
+      const vB = scaledVal(det.base, idxB, det.pct);
+      return `<div class="go-detail-item">
+        <div class="go-di-label">${det.label}</div>
+        <div class="go-di-row"><span class="go-di-city">${keyA.split(',')[0]}</span><span class="go-di-val-a">${vA}</span></div>
+        <div class="go-di-row"><span class="go-di-city">${keyB.split(',')[0]}</span><span class="go-di-val-b">${vB}</span></div>
+        <div class="go-di-desc">${det.desc}</div>
+      </div>`;
+    }).join('');
+
+    const row = document.createElement('div');
+    row.className = 'go-cat-row';
+    row.innerHTML = `
+      <button class="go-cat-trigger" onclick="toggleCat(this)">
+        <div class="go-cat-name">
+          <div class="go-cat-icon">${meta.icon}</div>
+          ${meta.label}
+        </div>
+        <div class="go-cat-val">${fmt(shareA)}</div>
+        <div class="go-cat-val">${fmt(shareB)}</div>
+        <div><span class="go-cat-diff ${cls}">${txt}</span></div>
+        <div class="go-chevron">▾</div>
+      </button>
+      <div class="go-cat-body">
+        <div class="go-detail-grid">${detailsHTML}</div>
+      </div>`;
+    container.appendChild(row);
+  }
+}
+
+function toggleCat(btn) {
+  btn.nextElementSibling.classList.toggle('open');
+  btn.querySelector('.go-chevron').classList.toggle('open');
+}
+
+populateSelects();
+recalc();
+</script>
+</body>
+</html>
